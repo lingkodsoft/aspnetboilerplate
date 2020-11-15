@@ -258,11 +258,17 @@ namespace Abp.EntityHistory
                 var trackedNavigationProperties = entityEntry.Navigations
                                                     .Where(np => trackedPropertyNames.Contains(np.Metadata.Name))
                                                     .ToList();
-                var additionalForeignKeys = trackedNavigationProperties
-                                                  .Where(np => !trackedPropertyNames.Contains(np.Metadata.Name))
-                                                  .Select(np => np.Metadata.ForeignKey)
-                                                  .Distinct()
-                                                  .ToList();
+
+                var additionalForeignKeys = entityEntry.Metadata.FindPrimaryKey()
+                    .Properties
+                    .Select(p => entityEntry.Property(p.Name).CurrentValue.As<IForeignKey>())
+                    .ToArray();
+                
+                // var additionalForeignKeys0 = trackedNavigationProperties
+                //                                   .Where(np => !trackedPropertyNames.Contains(np.Metadata.Name))
+                //                                   .Select(np => np.Metadata)
+                //                                   .Distinct()
+                //                                   .ToList();
 
                 /* Add additional foreign keys from navigation properties */
                 foreach (var foreignKey in additionalForeignKeys)
